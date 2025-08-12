@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>repo-viewer</title>
+    <link rel="stylesheet" href="index.css" type="text/css" />
+  </head>
+  <body>
+    <div id="tools">
+      <label for="filePathInput">File Path:</label>
+      <input type="text" id="filePathInput" placeholder="Enter file path" />
+      <button id="loadButton">Load File</button>
+    </div>
+
+    <div id="loading" style="display: none">
+      <div class="spinner"></div>
+      Loading, please wait...
+    </div>
+
+    <div id="app">
+      <div id="tree" class="tree"></div>
+      <div id="divider"></div>
+      <div id="node" class="node">
+        <div id="nodeInfo"></div>
+        <div id="fromAnchor"></div>
+        <div id="toAnchor"></div>
+      </div>
+    </div>
+    <script type="module" src="/src/index.ts"></script>
+    <script src="./scripts/d3.js"></script>
+    <script src="./scripts/file.js" defer></script>
+    <script src="./scripts/index.js"></script>
+  </body>
+</html>
