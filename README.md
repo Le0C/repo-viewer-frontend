@@ -1,4 +1,4 @@
-# Repo Viewer
+# Repo Viewer (frontend)
 
 An interactive web application for visualizing and exploring file and node relationships in a code repository. Built with Vite, TypeScript, and D3.js.
 
