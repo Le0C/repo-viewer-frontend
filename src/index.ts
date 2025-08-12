@@ -1,6 +1,9 @@
 import * as d3 from "d3";
 import type { D3ForceTree, Link, Node } from "./types";
 
+// Define zoom at the module level so it can be used in both displayJsonTree and centerOnNode
+let zoom: any;
+
 function centerOnNode(nodeId: string, nodes: Node[], svg: any) {
   const node = nodes.find((d) => d.id === nodeId)!;
 
@@ -13,11 +16,52 @@ function centerOnNode(nodeId: string, nodes: Node[], svg: any) {
     const yTranslation = svgHeight / 2 - node.y!;
 
     // Apply the transform to the 'g' element containing the graph.
-    d3.select("g")
+    // Use zoom.transform to update both the view and the zoom state
+    svg
       .transition()
-      .duration(750) // Adjust duration as needed for a smooth transition
-      .attr("transform", `translate(${xTranslation},${yTranslation})`);
+      .duration(750)
+      .call(
+        zoom.transform,
+        d3.zoomIdentity.translate(xTranslation, yTranslation)
+      )
+      .on("end", () => {
+        highlightNode(node);
+      });
   }
+}
+
+function highlightNode(node: Node) {
+  // Remove any existing ripple
+  d3.select("#ripple-effect").remove();
+
+  // Find the node's SVG element and get its current position
+  const nodeElem = d3.select(`#node-${node.id}`);
+  const cx = +nodeElem.attr("cx");
+  const cy = +nodeElem.attr("cy");
+
+  // Find the SVG group containing the nodes
+  const svg = d3.select("svg");
+  const g = svg.select("g");
+
+  // Add a circle at the node's position for the ripple effect
+  const ripple = g
+    .append("circle")
+    .attr("id", "ripple-effect")
+    .attr("cx", cx)
+    .attr("cy", cy)
+    .attr("r", 10)
+    .attr("fill", "none")
+    .attr("stroke", "#ffcc00")
+    .attr("stroke-width", 4)
+    .attr("stroke-opacity", 0.7);
+
+  // Animate the ripple: expand and fade out
+  ripple
+    .transition()
+    .duration(700)
+    .attr("r", 40)
+    .attr("stroke-opacity", 0)
+    .remove();
 }
 
 async function displayJsonTree(data: D3ForceTree) {
@@ -133,7 +177,10 @@ async function displayJsonTree(data: D3ForceTree) {
     .text((d) => d.name);
 
   // Zoom behavior
-  const zoom: any = d3.zoom().on("zoom", (event) => {
+  // Track the current zoom transform
+  let currentTransform = d3.zoomIdentity;
+  zoom = d3.zoom().on("zoom", (event) => {
+    currentTransform = event.transform;
     g.attr("transform", event.transform); // Apply zoom transform to the group
   });
 
@@ -147,8 +194,13 @@ async function displayJsonTree(data: D3ForceTree) {
 
   // Handle node click event
   node.on("click", function (_event, clickedNode) {
+    if (wasDragged) {
+      wasDragged = false;
+      return;
+    }
     repaintNodeLinks(clickedNode, data.links); // Call function to repaint links
     displayNodeData(clickedNode, data.links, listLinkClickHandler); // Call function to display data in #node element
+    highlightNode(clickedNode);
   });
 
   // Apply zoom behavior to SVG
@@ -176,13 +228,17 @@ async function displayJsonTree(data: D3ForceTree) {
           if (!event.active) simulation.alphaTarget(0.3).restart();
           d.fx = d.x;
           d.fy = d.y;
+          wasDragged = false;
+          g.attr("transform", currentTransform.toString());
         }
       )
       .on(
         "drag",
         (event: d3.D3DragEvent<SVGCircleElement, Node, Node>, d: Node) => {
-          d.fx = event.x;
-          d.fy = event.y;
+          const [x, y] = currentTransform.invert([event.x, event.y]);
+          d.fx = x;
+          d.fy = y;
+          wasDragged = true;
         }
       )
       .on(
@@ -201,6 +257,9 @@ async function displayJsonTree(data: D3ForceTree) {
 
     // Clear any previous content
     nodeElement.innerHTML = "";
+    const title = document.createElement("h3");
+    title.innerHTML = "Current File";
+    nodeElement.appendChild(title);
 
     const fileLink = document.createElement("a");
     fileLink.textContent = clickedNode.filePath;
@@ -240,6 +299,7 @@ async function displayJsonTree(data: D3ForceTree) {
 (window as any).displayJsonTree = displayJsonTree;
 
 let lastClickedNode: Node | null = null;
+let wasDragged = false;
 
 function repaintNodeLinks(clickedNode: Node, links: Link[]) {
   if (lastClickedNode && lastClickedNode.id === clickedNode.id) {
@@ -346,7 +406,7 @@ function createToLinks(
   nodeLinks.forEach((link) => {
     const listItem = document.createElement("li");
     const linkElement = document.createElement("a");
-    linkElement.href = `#node-${link.targetId}`;
+    linkElement.href = `#node-${link.sourceId}`;
     linkElement.textContent = `${link.sourceId} -> ${link.targetId}`;
     linkElement.addEventListener("click", (e) => handle(e));
     listItem.appendChild(linkElement);

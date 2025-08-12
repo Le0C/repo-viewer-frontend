@@ -1,6 +1,7 @@
 body {
   all: unset;
-  color: white;
+  color: rgb(255, 255, 255);
+  font-family: Arial, sans-serif;
 }
 
 #app {
@@ -31,11 +32,16 @@ body {
 }
 
 .node {
-  background-color: rgb(3, 0, 19);
+  background-color: rgb(10, 10, 10);
+}
+
+.node > * {
+  padding-left: 1rem;
 }
 
 /* Style for the uploader button container */
 #tools {
+  color: white;
   position: absolute;
   top: 10px;
   left: 10px;

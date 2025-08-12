@@ -4,7 +4,7 @@ An interactive web application for visualizing and exploring file and node relat
 
 ## About
 
-This tool started off as a set of scripts which I would use to get an understanding of a new repository. When reading a file, I found it useful to be able to visualise where this file was used across the project. Additionally, I used these scripts to cross check modified files when testing, to ensure that I wasn't making a change in one place that would cause a bug in another.
+This tool started off as a set of scripts which I used in the past to get an understanding of a new repository. When reading a file, I found it useful to be able to visualise where this file was used across the project. Additionally, I used these scripts to cross check modified files when testing, to ensure that I wasn't making a change in one place that would cause a bug in another.
 
 I converted these scripts into a frontend & web service with the goal of developing new features which were becoming difficult to manage in the suite of scripts which I developed initially.
 
@@ -71,8 +71,11 @@ npm run preview
 ## Usage
 
 1. Enter a file path in the input box and click **Load File**.
-2. The graph will display nodes and links from the loaded file.
-3. Click a node to highlight its connections and view details in the sidebar.
+2. The file path for this should be relative to the root of the viewer-backend repo.
+3. The graph will display nodes and links from the loaded file.
+4. Click a node to highlight its connections and view details in the sidebar.
+
+The link under "Current File" can be clicked to open this file in vscode.
 
 ## Customization
 
